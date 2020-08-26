@@ -1,7 +1,7 @@
 {
   "domain": "custom_filters",
   "name": "Custom filters for jinja2",
-  "documentation": "https://google.com",
+  "documentation": "https://github.com/zvldz/ha_custom_filters",
   "dependencies": [],
   "requirements": [],
   "config_flow": true,
