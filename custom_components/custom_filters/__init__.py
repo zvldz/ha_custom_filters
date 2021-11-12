@@ -2,6 +2,8 @@
 import urllib.parse
 import base64
 import zlib
+import json
+import re
 
 from random import Random, SystemRandom, shuffle
 
@@ -41,6 +43,10 @@ def unquote(string):
     return urllib.parse.unquote(string)
 
 
+def strtolist(string, delim=","):
+    return (re.sub("([\s]?)+['\"]+([\s]?)", "", string.strip(("[]")))).split(delim)
+
+
 def ternary(value, true_val, false_val, none_val=None):
     """  value ? true_val : false_val """
     if value is None and none_val is not None:
@@ -64,10 +70,14 @@ def randomize_list(mylist, seed=None):
     return mylist
 
 
+def to_ascii_json(string):
+    return json.dumps(string, ensure_ascii=False)
+
+
 def init(*args):
     env = _TemplateEnvironment(*args)
-
     env.filters["unquote"] = unquote
+    env.filters["strtolist"] = strtolist
     env.filters["urldecode"] = unquote
     env.filters["ternary"] = ternary
     env.filters["shuffle"] = randomize_list
@@ -75,13 +85,14 @@ def init(*args):
     env.filters["inflate"] = inflate
     env.filters["deflate_and_base64_encode"] = deflate_and_base64_encode
     env.filters["decode_base64_and_inflate"] = decode_base64_and_inflate
+    env.filters['to_ascii_json'] = to_ascii_json
     env.filters["decode_valetudo_map"] = decode_valetudo_map
-
     return env
 
 
 template.TemplateEnvironment = init
 template._NO_HASS_ENV.filters["unquote"] = unquote
+template._NO_HASS_ENV.filters["strtolist"] = strtolist
 template._NO_HASS_ENV.filters["urldecode"] = unquote
 template._NO_HASS_ENV.filters["ternary"] = ternary
 template._NO_HASS_ENV.filters["shuffle"] = randomize_list
@@ -90,6 +101,7 @@ template._NO_HASS_ENV.filters["inflate"] = inflate
 template._NO_HASS_ENV.filters["deflate_and_base64_encode"] = deflate_and_base64_encode
 template._NO_HASS_ENV.filters["decode_base64_and_inflate"] = decode_base64_and_inflate
 template._NO_HASS_ENV.filters["decode_valetudo_map"] = decode_valetudo_map
+template._NO_HASS_ENV.filters['to_ascii_json'] = to_ascii_json
 
 
 async def async_setup(hass, hass_config):
