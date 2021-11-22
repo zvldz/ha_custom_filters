@@ -1,12 +1,12 @@
 {
   "domain": "custom_filters",
   "name": "Custom templating filters for jinja2 templates.",
-  "version": "0.9.4",
+  "version": "0.9.5",
   "documentation": "https://github.com/blizzrdof77/ha_custom_filters",
-  "issue_tracker": "https://github.com/blizzrdof77/ha_custom_filters/issues",
+  "issue_tracker": "https://github.com/zvldz/ha_custom_filters/issues",
   "dependencies": ["template"],
   "after_dependencies": [],
-  "requirements": [],
+  "requirements": ["jinja2"],
   "config_flow": true,
   "codeowners": ["@zvldz", "@blizzrdof77"]
 }
