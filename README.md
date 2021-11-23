@@ -20,6 +20,9 @@ Add `custom_filters:` to your configuration.yaml.
 unquote                     - replace %xx escapes by their single-character equivalent.
 urldecode                   - alias for `unqoute`
 strtolist                   - turn a string (e.g. "['blue', 'red']") into a list
+listify                     - Convert a string or non-list/dict into a list/dict
+get_index                   - Return the numeric index of a list or dict item
+grab                        - Get a list/dict item by key, with optional fallback
 ternary                     - to use one value on true, one value on false and a third value on null
 shuffle                     - randomize an existing list, giving a different order every invocation
 deflate                     - zlib decompress

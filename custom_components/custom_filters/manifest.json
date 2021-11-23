@@ -1,10 +1,12 @@
 {
   "domain": "custom_filters",
-  "name": "Custom zilters for jinja2",
-  "version": "0.9.3",
+  "name": "Custom filters for Jinja2 templates.",
+  "version": "0.9.8",
   "documentation": "https://github.com/blizzrdof77/ha_custom_filters",
-  "dependencies": [],
-  "requirements": [],
+  "issue_tracker": "https://github.com/zvldz/ha_custom_filters/issues",
+  "dependencies": ["template"],
+  "after_dependencies": [],
+  "requirements": ["jinja2"],
   "config_flow": true,
-  "codeowners": [ "@zvldz", "@blizzrdof77" ]
+  "codeowners": ["@zvldz", "@blizzrdof77"]
 }

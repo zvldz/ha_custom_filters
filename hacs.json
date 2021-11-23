@@ -1,4 +1,4 @@
 {
-  "name": "Custom Filters",
+  "name": "Custom Jinja2 Template Filters",
   "render_readme": true
 }
