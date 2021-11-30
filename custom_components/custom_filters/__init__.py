@@ -157,6 +157,28 @@ def grab(obj, key=0, fallback=""):
 
 
 # --
+# - REACH
+# --
+def reach(obj, keypath, fallback=""):
+    """Get a dict item by full path of key(s), with optional fallback"""
+    res = {"found": True, "level": obj, "val": False}
+    keys = keypath.split('.')
+    if isinstance(obj, (dict, list)):
+        for key in keys:
+            if res["found"] is True:
+                try:
+                    res["level"] = res["level"][key]
+                except KeyError:
+                    res["found"] = False
+                    return fallback
+            else:
+                return fallback
+    else:
+        return fallback
+    return res["level"]
+
+
+# --
 # - TERNARY
 # --
 def ternary(value, true_val, false_val, none_val=None):
@@ -207,6 +229,7 @@ def init(*args):
     env.filters["listify"] = listify
     env.filters["get_index"] = get_index
     env.filters["grab"] = grab
+    env.filters["reach"] = reach
     env.filters["urldecode"] = unquote
     env.filters["ternary"] = ternary
     env.filters["shuffle"] = randomize_list
@@ -225,6 +248,7 @@ template._NO_HASS_ENV.filters["strtolist"] = strtolist
 template._NO_HASS_ENV.filters["listify"] = listify
 template._NO_HASS_ENV.filters["get_index"] = get_index
 template._NO_HASS_ENV.filters["grab"] = grab
+template._NO_HASS_ENV.filters["reach"] = reach
 template._NO_HASS_ENV.filters["urldecode"] = unquote
 template._NO_HASS_ENV.filters["ternary"] = ternary
 template._NO_HASS_ENV.filters["shuffle"] = randomize_list
