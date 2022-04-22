@@ -4,7 +4,6 @@
   "version": "0.9.9",
   "documentation": "https://github.com/blizzrdof77/ha_custom_filters",
   "issue_tracker": "https://github.com/zvldz/ha_custom_filters/issues",
-  "dependencies": ["template"],
   "after_dependencies": [],
   "requirements": ["jinja2"],
   "codeowners": ["@zvldz", "@blizzrdof77"]
