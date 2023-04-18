@@ -5,10 +5,9 @@ import json
 import re
 import urllib.parse
 import zlib
+import logging
 
 from random import Random, SystemRandom, shuffle
-
-import logging
 
 from homeassistant.helpers import template
 
@@ -18,11 +17,71 @@ _TemplateEnvironment = template.TemplateEnvironment
 
 
 # --
-# - DEFLATE
+# - REPLACE ALL
 # --
-def deflate(string):
-    """Deflates/decompresses a string"""
-    return zlib.decompress(string)
+def replace_all(text, find, replace = ''):
+    """Replace all provided values with replacement value(s)"""
+    find_all = find if isinstance(find, (list)) else [find]
+    for i in find_all:
+        r = replace if not isinstance(replace, (list)) else replace[find.index(i)]
+        text = text.replace(i, r)
+    return text
+
+
+# --
+# - IS DEFINED
+# --
+def is_defined(varname):
+    """Check if a variable is defined by it's string name"""
+    try:
+        globals()[varname]
+    except NameError:
+        return False
+    else:
+        return True
+
+
+# --
+# - GET TYPE
+# --
+def get_type(val):
+    """Return the object type as a string"""
+    return type(val).__name__
+
+
+# --
+# - IS TYPE
+# --
+def is_type(val, typeof):
+    """Check if a value is of given type"""
+    if str(typeof) == typeof:
+        typeof = typeof
+    elif isinstance(typeof, type):
+        typeof = getattr(typeof, '__name__', False)
+    else:
+        typeof = False
+    if not isinstance(typeof, str):
+        return None
+    typeof = typeof.lower()
+    val_type = type(val).__name__
+    check_type = (typeof.lower()
+        .replace('boolean', 'bool')
+        .replace('integer', 'int')
+        .replace('double', 'float')
+        .replace('array', 'list')
+        .replace('string', 'str').replace('text', 'str')
+        .replace('dictionary', 'dict').replace('mapping', 'dict')
+        .replace('nonetype', 'none').replace('none', 'NoneType').replace('null', 'NoneType')
+    )
+    if check_type == 'number':
+        passchk = val_type in ['int', 'float', 'complex']
+    elif check_type == 'sequence':
+        passchk = val_type in ['list', 'tuple', 'range']
+    elif check_type == 'json':
+        passchk = val_type in ['dict', 'list']
+    else:
+        passchk = val_type == check_type
+    return passchk
 
 
 # --
@@ -31,6 +90,14 @@ def deflate(string):
 def inflate(string):
     """Inflates/compresses a string"""
     return zlib.compress(string.encode("utf-8"))
+
+
+# --
+# - DEFLATE
+# --
+def deflate(string):
+    """Deflates/decompresses a string"""
+    return zlib.decompress(string)
 
 
 # --
@@ -224,6 +291,10 @@ def to_ascii_json(string):
 def init(*args):
     """Initialize filters"""
     env = _TemplateEnvironment(*args)
+    env.filters["is_defined"] = is_defined
+    env.filters["replace_all"] = replace_all
+    env.filters["get_type"] = get_type
+    env.filters["is_type"] = is_type
     env.filters["unquote"] = unquote
     env.filters["strtolist"] = strtolist
     env.filters["listify"] = listify
@@ -237,12 +308,34 @@ def init(*args):
     env.filters["inflate"] = inflate
     env.filters["deflate_and_base64_encode"] = deflate_and_base64_encode
     env.filters["decode_base64_and_inflate"] = decode_base64_and_inflate
-    env.filters['to_ascii_json'] = to_ascii_json
+    env.filters["to_ascii_json"] = to_ascii_json
     env.filters["decode_valetudo_map"] = decode_valetudo_map
+    env.globals["is_defined"] = is_defined
+    env.globals["replace_all"] = replace_all
+    env.globals["get_type"] = get_type
+    env.globals["is_type"] = is_type
+    env.globals["unquote"] = unquote
+    env.globals["urldecode"] = unquote
+    env.globals["strtolist"] = strtolist
+    env.globals["listify"] = listify
+    env.globals["get_index"] = get_index
+    env.globals["grab"] = grab
+    env.globals["reach"] = reach
+    env.globals["ternary"] = ternary
+    env.globals["deflate"] = deflate
+    env.globals["inflate"] = inflate
+    env.globals["deflate_and_base64_encode"] = deflate_and_base64_encode
+    env.globals["decode_base64_and_inflate"] = decode_base64_and_inflate
+    env.globals["to_ascii_json"] = to_ascii_json
+    env.globals["decode_valetudo_map"] = decode_valetudo_map
     return env
 
 
 template.TemplateEnvironment = init
+template._NO_HASS_ENV.filters["is_defined"] = is_defined
+template._NO_HASS_ENV.filters["replace_all"] = replace_all
+template._NO_HASS_ENV.filters["get_type"] = get_type
+template._NO_HASS_ENV.filters["is_type"] = is_type
 template._NO_HASS_ENV.filters["unquote"] = unquote
 template._NO_HASS_ENV.filters["strtolist"] = strtolist
 template._NO_HASS_ENV.filters["listify"] = listify
@@ -256,9 +349,45 @@ template._NO_HASS_ENV.filters["deflate"] = deflate
 template._NO_HASS_ENV.filters["inflate"] = inflate
 template._NO_HASS_ENV.filters["deflate_and_base64_encode"] = deflate_and_base64_encode
 template._NO_HASS_ENV.filters["decode_base64_and_inflate"] = decode_base64_and_inflate
-template._NO_HASS_ENV.filters['to_ascii_json'] = to_ascii_json
+template._NO_HASS_ENV.filters["to_ascii_json"] = to_ascii_json
 template._NO_HASS_ENV.filters["decode_valetudo_map"] = decode_valetudo_map
+template._NO_HASS_ENV.globals["is_defined"] = is_defined
+template._NO_HASS_ENV.globals["replace_all"] = replace_all
+template._NO_HASS_ENV.globals["get_type"] = get_type
+template._NO_HASS_ENV.globals["is_type"] = is_type
+template._NO_HASS_ENV.globals["unquote"] = unquote
+template._NO_HASS_ENV.globals["urldecode"] = unquote
+template._NO_HASS_ENV.globals["strtolist"] = strtolist
+template._NO_HASS_ENV.globals["listify"] = listify
+template._NO_HASS_ENV.globals["get_index"] = get_index
+template._NO_HASS_ENV.globals["grab"] = grab
+template._NO_HASS_ENV.globals["reach"] = reach
+template._NO_HASS_ENV.globals["ternary"] = ternary
+template._NO_HASS_ENV.globals["deflate"] = deflate
+template._NO_HASS_ENV.globals["inflate"] = inflate
+template._NO_HASS_ENV.globals["deflate_and_base64_encode"] = deflate_and_base64_encode
+template._NO_HASS_ENV.globals["decode_base64_and_inflate"] = decode_base64_and_inflate
+template._NO_HASS_ENV.globals["to_ascii_json"] = to_ascii_json
+template._NO_HASS_ENV.globals["decode_valetudo_map"] = decode_valetudo_map
 
 
 async def async_setup(hass, hass_config):
+    tpl = template.Template("", template._NO_HASS_ENV.hass)
+    tpl._env.globals = is_defined
+    tpl._env.globals = replace_all
+    tpl._env.globals = get_type
+    tpl._env.globals = is_type
+    tpl._env.globals = unquote
+    tpl._env.globals = strtolist
+    tpl._env.globals = listify
+    tpl._env.globals = get_index
+    tpl._env.globals = grab
+    tpl._env.globals = reach
+    tpl._env.globals = ternary
+    tpl._env.globals = deflate
+    tpl._env.globals = inflate
+    tpl._env.globals = deflate_and_base64_encode
+    tpl._env.globals = decode_base64_and_inflate
+    tpl._env.globals = to_ascii_json
+    tpl._env.globals = decode_valetudo_map
     return True
