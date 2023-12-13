@@ -1,0 +1,10 @@
+{
+  "domain": "hash-filters",
+  "name": "hash-filters for HASS",
+  "version": "0.0.1",
+  "documentation": "https://github.com/burntcookie90/hass-hash-filter",
+  "issue_tracker": "https://github.com/burntcookie90/hass-hash-filter/issues",
+  "after_dependencies": ["template"],
+  "requirements": ["jinja2"],
+  "codeowners": ["@burntcookie90"]
+}
