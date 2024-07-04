@@ -258,18 +258,12 @@ def to_ascii_json(string):
 ## -- Format Date
 def get_format_date_function(format="%d %b %Y, %H:%M:%S"):
     def format_date(obj):
+        # Accepts strings or datetime objects
         if isinstance(obj, datetime.date):
             return obj.strftime(format)
         return dateutil.parser.parse(obj).strftime(format)
     return format_date
 
-## -- String to local datetime
-def as_local_datetime(string):
-    env = template._NO_HASS_ENV
-    return  env.filters['as_local'](env.filters['as_datetime'](string))
-
-def debug(*args):
-    return template.TemplateEnvironment().filters
 
 # Array of functions to add as custom filters. Creates a filter and a global macro using the functions name.
 # You can also supply a dict with "name" and "function" keys to specify a custom name for the filter/macro.
@@ -292,8 +286,7 @@ custom_filters = [
     ternary, 
     shuffle, 
     to_ascii_json, 
-    { "name": "format_date", "function": get_format_date_function() }, 
-    as_local_datetime
+    { "name": "format_date", "function": get_format_date_function() }
 ]
 
 def add_custom_filter_function(custom_filter, *environments):
@@ -320,10 +313,11 @@ async def async_setup(hass, hass_config):
     config = hass_config["custom_filters"]
 
     tpl = template.Template("", hass)
-    _LOGGER.error(config)
+
     for f in custom_filters:
         add_custom_filter_function(f, tpl._env)
 
     if config["custom_date_format"]:
         add_custom_filter_function(get_format_date_function(config["custom_date_format"]), tpl._env, template._NO_HASS_ENV)
+
     return True
