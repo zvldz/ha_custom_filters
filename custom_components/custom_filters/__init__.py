@@ -6,6 +6,8 @@ import re
 import urllib.parse
 import zlib
 import logging
+import datetime
+import dateutil.parser
 
 from random import Random, SystemRandom, shuffle
 
@@ -253,106 +255,69 @@ def to_ascii_json(string):
     return json.dumps(string, ensure_ascii=False)
 
 
+## -- Format Date
+def get_format_date_function(format="%d %b %Y, %H:%M:%S"):
+    def format_date(obj):
+        # Accepts strings or datetime objects
+        if isinstance(obj, datetime.date):
+            return obj.strftime(format)
+        return dateutil.parser.parse(obj).strftime(format)
+    return format_date
+
+
+# Array of functions to add as custom filters. Creates a filter and a global macro using the functions name.
+# You can also supply a dict with "name" and "function" keys to specify a custom name for the filter/macro.
+custom_filters = [
+    replace_all, 
+    is_defined, 
+    get_type, 
+    is_type, 
+    inflate, 
+    deflate, 
+    decode_base64_and_inflate, 
+    deflate_and_base64_encode, 
+    decode_valetudo_map, 
+    urldecode, 
+    strtolist, 
+    listify, 
+    get_index, 
+    grab, 
+    reach, 
+    ternary, 
+    shuffle, 
+    to_ascii_json, 
+    { "name": "format_date", "function": get_format_date_function() }
+]
+
+def add_custom_filter_function(custom_filter, *environments):
+    name = custom_filter["name"] if isinstance(custom_filter, dict) else custom_filter.__name__
+    function = custom_filter["function"] if isinstance(custom_filter, dict) else custom_filter
+    for env in environments:
+        env.globals[name] = env.filters[name] = function
 
 def init(*args):
     """Initialize filters"""
     env = _TemplateEnvironment(*args)
-    env.filters["replace_all"] = replace_all
-    env.filters["is_defined"] = is_defined
-    env.filters["get_type"] = get_type
-    env.filters["is_type"] = is_type
-    env.filters["inflate"] = inflate
-    env.filters["deflate"] = deflate
-    env.filters["decode_base64_and_inflate"] = decode_base64_and_inflate
-    env.filters["deflate_and_base64_encode"] = deflate_and_base64_encode
-    env.filters["decode_valetudo_map"] = decode_valetudo_map
-    env.filters["urldecode"] = urldecode
-    env.filters["strtolist"] = strtolist
-    env.filters["listify"] = listify
-    env.filters["get_index"] = get_index
-    env.filters["grab"] = grab
-    env.filters["reach"] = reach
-    env.filters["ternary"] = ternary
-    env.filters["shuffle"] = shuffle
-    env.filters["to_ascii_json"] = to_ascii_json
-    env.globals["replace_all"] = replace_all
-    env.globals["is_defined"] = is_defined
-    env.globals["get_type"] = get_type
-    env.globals["is_type"] = is_type
-    env.globals["inflate"] = inflate
-    env.globals["deflate"] = deflate
-    env.globals["decode_base64_and_inflate"] = decode_base64_and_inflate
-    env.globals["deflate_and_base64_encode"] = deflate_and_base64_encode
-    env.globals["decode_valetudo_map"] = decode_valetudo_map
-    env.globals["urldecode"] = urldecode
-    env.globals["strtolist"] = strtolist
-    env.globals["listify"] = listify
-    env.globals["get_index"] = get_index
-    env.globals["grab"] = grab
-    env.globals["reach"] = reach
-    env.globals["ternary"] = ternary
-    env.globals["shuffle"] = shuffle
-    env.globals["to_ascii_json"] = to_ascii_json
+    
+    for f in custom_filters:
+        add_custom_filter_function(f, env)
+
     return env
 
 
 template.TemplateEnvironment = init
-template._NO_HASS_ENV.filters["replace_all"] = replace_all
-template._NO_HASS_ENV.filters["is_defined"] = is_defined
-template._NO_HASS_ENV.filters["get_type"] = get_type
-template._NO_HASS_ENV.filters["is_type"] = is_type
-template._NO_HASS_ENV.filters["inflate"] = inflate
-template._NO_HASS_ENV.filters["deflate"] = deflate
-template._NO_HASS_ENV.filters["decode_base64_and_inflate"] = decode_base64_and_inflate
-template._NO_HASS_ENV.filters["deflate_and_base64_encode"] = deflate_and_base64_encode
-template._NO_HASS_ENV.filters["decode_valetudo_map"] = decode_valetudo_map
-template._NO_HASS_ENV.filters["urldecode"] = urldecode
-template._NO_HASS_ENV.filters["strtolist"] = strtolist
-template._NO_HASS_ENV.filters["listify"] = listify
-template._NO_HASS_ENV.filters["get_index"] = get_index
-template._NO_HASS_ENV.filters["grab"] = grab
-template._NO_HASS_ENV.filters["reach"] = reach
-template._NO_HASS_ENV.filters["ternary"] = ternary
-template._NO_HASS_ENV.filters["shuffle"] = shuffle
-template._NO_HASS_ENV.filters["to_ascii_json"] = to_ascii_json
-template._NO_HASS_ENV.globals["replace_all"] = replace_all
-template._NO_HASS_ENV.globals["is_defined"] = is_defined
-template._NO_HASS_ENV.globals["get_type"] = get_type
-template._NO_HASS_ENV.globals["is_type"] = is_type
-template._NO_HASS_ENV.globals["inflate"] = inflate
-template._NO_HASS_ENV.globals["deflate"] = deflate
-template._NO_HASS_ENV.globals["decode_base64_and_inflate"] = decode_base64_and_inflate
-template._NO_HASS_ENV.globals["deflate_and_base64_encode"] = deflate_and_base64_encode
-template._NO_HASS_ENV.globals["decode_valetudo_map"] = decode_valetudo_map
-template._NO_HASS_ENV.globals["urldecode"] = urldecode
-template._NO_HASS_ENV.globals["strtolist"] = strtolist
-template._NO_HASS_ENV.globals["listify"] = listify
-template._NO_HASS_ENV.globals["get_index"] = get_index
-template._NO_HASS_ENV.globals["grab"] = grab
-template._NO_HASS_ENV.globals["reach"] = reach
-template._NO_HASS_ENV.globals["ternary"] = ternary
-template._NO_HASS_ENV.globals["shuffle"] = shuffle
-template._NO_HASS_ENV.globals["to_ascii_json"] = to_ascii_json
-
+for f in custom_filters:
+    add_custom_filter_function(f, template._NO_HASS_ENV)
 
 async def async_setup(hass, hass_config):
-    tpl = template.Template("", template._NO_HASS_ENV.hass)
-    tpl._env.globals = replace_all
-    tpl._env.globals = is_defined
-    tpl._env.globals = get_type
-    tpl._env.globals = is_type
-    tpl._env.globals = inflate
-    tpl._env.globals = deflate
-    tpl._env.globals = deflate_and_base64_encode
-    tpl._env.globals = decode_base64_and_inflate
-    tpl._env.globals = decode_valetudo_map
-    tpl._env.globals = urldecode
-    tpl._env.globals = strtolist
-    tpl._env.globals = listify
-    tpl._env.globals = get_index
-    tpl._env.globals = grab
-    tpl._env.globals = reach
-    tpl._env.globals = ternary
-    tpl._env.globals = shuffle
-    tpl._env.globals = to_ascii_json
+    config = hass_config["custom_filters"]
+
+    tpl = template.Template("", hass)
+
+    for f in custom_filters:
+        add_custom_filter_function(f, tpl._env)
+
+    if config["custom_date_format"]:
+        add_custom_filter_function(get_format_date_function(config["custom_date_format"]), tpl._env, template._NO_HASS_ENV)
+
     return True
