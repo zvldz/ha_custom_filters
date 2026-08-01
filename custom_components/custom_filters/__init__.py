@@ -306,8 +306,15 @@ def init(*args):
 
 
 template.TemplateEnvironment = init
+
+# _NO_HASS_ENV was removed in HA 2026.7 (templates always require hass now),
+# keep it for older versions only
+_LEGACY_ENVS = (
+    (template._NO_HASS_ENV,) if hasattr(template, "_NO_HASS_ENV") else ()
+)
+
 for f in custom_filters:
-    add_custom_filter_function(f, template._NO_HASS_ENV)
+    add_custom_filter_function(f, *_LEGACY_ENVS)
 
 async def async_setup(hass, hass_config):
     config = hass_config["custom_filters"]
@@ -318,6 +325,6 @@ async def async_setup(hass, hass_config):
         add_custom_filter_function(f, tpl._env)
 
     if config["custom_date_format"]:
-        add_custom_filter_function(get_format_date_function(config["custom_date_format"]), tpl._env, template._NO_HASS_ENV)
+        add_custom_filter_function(get_format_date_function(config["custom_date_format"]), tpl._env, *_LEGACY_ENVS)
 
     return True
